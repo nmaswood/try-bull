@@ -1,25 +1,44 @@
-const Queue = require("bull");
+import { Queue, Worker, WorkerOptions } from "bullmq";
+import {
+  JobMap,
+  JobName,
+  BullQueueForName,
+  BullProcessorForName,
+} from "./queue-types";
 
-const printStuff = new Queue("alpha", "redis://127.0.0.1:6379");
-const calculateTak = new Queue("beta", "redis://127.0.0.1:6379");
+import IORedis from "ioredis";
 
-function tak(x: number, y: number, z: number): number {
-  if (y > x) {
-    return z;
+export class QueueManager {
+  #queues: Record<JobName, BullQueueForName<JobName>>;
+  #connection: IORedis.Redis;
+
+  constructor(connection: IORedis.Redis) {
+    this.#connection = connection;
+    this.#queues = {
+      echo: new Queue("echo", { connection }),
+    };
   }
-  return tak(tak(x - 1, y, z), tak(y - 1, z, x), tak(z - 1, x, y));
+
+  getQueue = <TName extends JobName>(name: TName): BullQueueForName<TName> => {
+    const queue = this.#queues[name];
+    if (queue == undefined) {
+      throw new Error(`Could not find queue corresponding to job name ${name}`);
+    }
+
+    return (queue as unknown) as BullQueueForName<TName>;
+  };
+
+  workerForQueue = <TName extends keyof JobMap>(
+    name: TName,
+    processor: BullProcessorForName<TName>,
+    opts: WorkerOptions = {}
+  ): Worker<JobMap[TName]["args"], JobMap[TName]["return"]> =>
+    new Worker(name, processor, {
+      ...opts,
+      connection: this.#connection,
+    });
+
+  getQueues = (): Record<JobName, BullQueueForName<JobName>> => this.#queues;
 }
 
-printStuff.process(function (job) {
-  console.log("HELLO WORLD");
-  return Promise.resolve({ framerate: 29.5 /* etc... */ });
-});
-
-function f() {
-  setTimeout(() => {
-    console.log("hello world");
-    f();
-  }, 4000);
-}
-
-printStuff.add({ hello: "world" });
+export const QUEUE = new QueueManager(new IORedis());

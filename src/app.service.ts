@@ -1,8 +1,11 @@
 import { Injectable } from "@nestjs/common";
+import { Queue } from "bull";
 
 @Injectable()
 export class AppService {
-  getHello(): string {
+  //constructor() {}
+
+  async getHello(): Promise<string> {
     return "Hello World!";
   }
 
