@@ -8,6 +8,7 @@ export interface JobMap {
 }
 
 export type JobName = keyof JobMap;
+
 export type BullWorkerForName<TName extends JobName> = Worker<
   JobMap[TName]["args"],
   JobMap[TName]["return"],

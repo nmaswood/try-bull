@@ -1,16 +1,12 @@
-export interface QueueProvider {
+export interface QueueProducer {
   enqueueJob: <JobNameT extends JobName>(
     queueName: JobNameT,
-    processor: (
-      input: JobInput<JobMap[JobNameT]["args"]>
-    ) => JobMap[JobNameT]["return"]
+    args: JobMap[JobNameT]["args"]
   ) => Promise<Job>;
   enqueueRepeatableJob: <JobNameT extends JobName>(
     queueName: JobNameT,
     jobId: string,
-    processor: (
-      input: JobInput<JobMap[JobNameT]["args"]>
-    ) => JobMap[JobNameT]["return"],
+    args: JobMap[JobNameT]["args"],
     opts?: EnqueueRepeatableOpts
   ) => Promise<Job>;
 }
@@ -18,22 +14,21 @@ export interface QueueProvider {
 export interface QueueConsumer {
   initializeWorker: <JobNameT extends JobName>(
     queueName: JobNameT,
-    processor: (
-      input: JobInput<JobMap[JobNameT]["args"]>
-    ) => JobMap[JobNameT]["return"]
-  ) => Promise<Worker>;
+    processor: Processor<JobNameT>
+  ) => Worker;
 }
+
 export interface Job {
   id: string;
 }
 
 export interface Worker {
-  close: Promise<void>;
+  close: () => Promise<void>;
 }
 
 export interface JobInput<PayloadT> {
   id: string;
-  payload: PayloadT;
+  args: PayloadT;
 }
 
 export type RepeatOptions =
@@ -58,3 +53,6 @@ export interface JobMap {
 }
 
 export type JobName = keyof JobMap;
+export type Processor<JobNameT extends JobName> = (
+  input: JobInput<JobMap[JobNameT]["args"]>
+) => JobMap[JobNameT]["return"];
