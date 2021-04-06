@@ -1,4 +1,4 @@
-import { Queue, Worker, WorkerOptions } from "bullmq";
+import { Queue, QueueScheduler, Worker, WorkerOptions } from "bullmq";
 import {
   JobMap,
   JobName,
@@ -17,6 +17,7 @@ export class BullQueueManager {
     this.#queues = {
       echo: new Queue("echo", { connection }),
     };
+    //new QueueScheduler("echo", { connection });
   }
 
   getQueue = <TName extends JobName>(name: TName): BullQueueForName<TName> => {

@@ -8,12 +8,13 @@ export class BullConsumer implements OnModuleInit {
   constructor(private readonly bullManagerService: BullQueueManagerService) {}
 
   async onModuleInit() {
-    console.log("wtf please work");
+    console.log("Initializing consumer");
     const echo = this.bullManagerService.getManager();
 
     echo.workerForQueue("echo" as const, (job) => {
-      console.log(`Job Processed with ${job.data.message}`);
+      console.log(`Job Processed with ${job.data.message}, id: ${job.id}`);
       return undefined;
     });
+    console.log("intialized worker");
   }
 }
