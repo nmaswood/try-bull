@@ -8,7 +8,7 @@ import {
 
 import IORedis from "ioredis";
 
-export class QueueManager {
+export class BullQueueManager {
   #queues: Record<JobName, BullQueueForName<JobName>>;
   #connection: IORedis.Redis;
 
@@ -32,7 +32,7 @@ export class QueueManager {
     name: TName,
     processor: BullProcessorForName<TName>,
     opts: WorkerOptions = {}
-  ): Worker<JobMap[TName]["args"], JobMap[TName]["return"]> =>
+  ): Worker<JobMap[TName]["args"], JobMap[TName]["return"], TName> =>
     new Worker(name, processor, {
       ...opts,
       connection: this.#connection,
@@ -41,4 +41,4 @@ export class QueueManager {
   getQueues = (): Record<JobName, BullQueueForName<JobName>> => this.#queues;
 }
 
-export const QUEUE = new QueueManager(new IORedis());
+export const QUEUE = new BullQueueManager(new IORedis());
