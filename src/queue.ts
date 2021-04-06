@@ -17,7 +17,7 @@ export class BullQueueManager {
     this.#queues = {
       echo: new Queue("echo", { connection }),
     };
-    //new QueueScheduler("echo", { connection });
+    new QueueScheduler("echo", { connection });
   }
 
   getQueue = <TName extends JobName>(name: TName): BullQueueForName<TName> => {
@@ -43,3 +43,5 @@ export class BullQueueManager {
 }
 
 export const QUEUE = new BullQueueManager(new IORedis());
+
+//class BullQueueProvider implements QueueProvider {}
