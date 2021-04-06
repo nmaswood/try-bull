@@ -39,15 +39,13 @@ export class BullQueueProducer implements LBQueue.QueueProducer {
     queueName: JobNameT,
     jobId: string,
     args: LBQueue.JobMap[JobNameT]["args"],
-    opts?: LBQueue.EnqueueRepeatableOpts
+    opts: LBQueue.EnqueueRepeatableOpts
   ): Promise<LBQueue.Job> => {
     const queue = this.getQueue(queueName);
     const job = await queue.add(queueName, args, {
-      jobId,
       ...DEFAULT_BULL_ARGS,
-      ...(opts === undefined
-        ? {}
-        : { repeat: this.bullRepeatOpts(opts.repeat) }),
+      jobId,
+      repeat: this.bullRepeatOpts(opts.repeat),
     });
     return { id: job.id };
   };

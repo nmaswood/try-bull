@@ -7,7 +7,7 @@ export interface QueueProducer {
     queueName: JobNameT,
     jobId: string,
     args: JobMap[JobNameT]["args"],
-    opts?: EnqueueRepeatableOpts
+    opts: EnqueueRepeatableOpts
   ) => Promise<Job>;
 }
 
