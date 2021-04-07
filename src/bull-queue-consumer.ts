@@ -11,7 +11,12 @@ export class BullQueueConsumer implements LBQueue.QueueConsumer {
   #queues: Record<
     LBQueue.JobName,
     {
-      queue: BullQueueForName<LBQueue.JobName>;
+      queue: BullMQ.Queue<
+        LBQueue.JobMap[LBQueue.JobName]["args"],
+        LBQueue.JobMap[LBQueue.JobName]["return"],
+        LBQueue.JobName
+      >;
+
       scheduler: BullMQ.QueueScheduler;
     }
   >;
@@ -31,9 +36,25 @@ export class BullQueueConsumer implements LBQueue.QueueConsumer {
     name: NameT,
     processor: LBQueue.Processor<NameT>
   ): LBQueue.Worker => {
-    const worker = new BullMQ.Worker(name, (job) => processor(job.data), {
+    const worker = new BullMQ.Worker<
+      LBQueue.JobMap[NameT]["args"],
+      LBQueue.JobMap[NameT]["return"],
+      NameT
+    >(name, (job) => processor({ id: job.id, args: job.data }), {
       connection: this.#connection,
       ...DEFAULT_WORKER_ARGS,
+    });
+
+    worker.on("failed", (job: BullMQ.Job, failedReason: string) => {
+      console.log(
+        `Worker failed processing ${job.id} due to ${JSON.stringify(
+          failedReason
+        )}`
+      );
+    });
+
+    worker.on("completed", (job: BullMQ.Job, returnvalue: any) => {
+      console.log(`Worker completed processing ${job.id}`);
     });
 
     return {
@@ -43,9 +64,3 @@ export class BullQueueConsumer implements LBQueue.QueueConsumer {
 
   getQueues = () => this.#queues;
 }
-
-export type BullQueueForName<NameT extends LBQueue.JobName> = BullMQ.Queue<
-  LBQueue.JobMap[NameT]["args"],
-  LBQueue.JobMap[NameT]["return"],
-  NameT
->;

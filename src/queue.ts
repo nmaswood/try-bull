@@ -3,12 +3,17 @@ export interface QueueProducer {
     queueName: JobNameT,
     args: JobMap[JobNameT]["args"]
   ) => Promise<Job>;
-  enqueueRepeatableJob: <JobNameT extends JobName>(
+  upsertRepeatableJob: <JobNameT extends JobName>(
     queueName: JobNameT,
     jobId: string,
     args: JobMap[JobNameT]["args"],
     opts: EnqueueRepeatableOpts
   ) => Promise<Job>;
+  removeRepeatableJob: <JobNameT extends JobName>(
+    queueName: JobNameT,
+    jobId: string,
+    opts: RepeatOptions
+  ) => Promise<RemoveJob>;
 }
 
 export interface QueueConsumer {
@@ -31,13 +36,17 @@ export interface JobInput<PayloadT> {
   args: PayloadT;
 }
 
+export interface RemoveJob {
+  wasRemoved: boolean;
+}
+
 export type RepeatOptions =
   | {
       type: "cron";
       value: string;
     }
   | {
-      type: "repeat";
+      type: "every";
       value: number;
     };
 

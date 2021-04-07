@@ -35,7 +35,7 @@ export class BullQueueProducer implements LBQueue.QueueProducer {
    * # TODO add logic that does a non-atomic update a job if you change the cron settings
    *
    */
-  enqueueRepeatableJob = async <JobNameT extends LBQueue.JobName>(
+  upsertRepeatableJob = async <JobNameT extends LBQueue.JobName>(
     queueName: JobNameT,
     jobId: string,
     args: LBQueue.JobMap[JobNameT]["args"],
@@ -45,15 +45,38 @@ export class BullQueueProducer implements LBQueue.QueueProducer {
     const job = await queue.add(queueName, args, {
       ...DEFAULT_BULL_ARGS,
       jobId,
-      repeat: this.bullRepeatOpts(opts.repeat),
+      repeat: this.toBullRepeatOpts(opts.repeat),
     });
     return { id: job.id };
   };
 
-  private bullRepeatOpts = (
+  removeRepeatableJob = async <JobNameT extends LBQueue.JobName>(
+    queueName: JobNameT,
+    jobId: string,
+    opts: LBQueue.RepeatOptions
+  ): Promise<LBQueue.RemoveJob> => {
+    const queue = this.getQueue(queueName);
+    const job = await queue.removeRepeatable(
+      queueName,
+      this.toBullRepeatOpts(opts),
+      jobId
+    );
+    console.log(job);
+    return {
+      wasRemoved: false,
+    };
+  };
+
+  private toBullRepeatOpts = (
     opts: LBQueue.RepeatOptions
   ): BullMQ.RepeatOptions =>
-    opts.type === "cron" ? { cron: opts.value } : { every: opts.value };
+    opts.type === "cron"
+      ? {
+          cron: opts.value,
+        }
+      : {
+          every: opts.value,
+        };
 
   private getQueue = <TName extends LBQueue.JobName>(
     name: TName
