@@ -1,8 +1,6 @@
 import { OnModuleInit, Inject } from "@nestjs/common";
-import { Injectable } from "@nestjs/common";
 import { QueueConsumer } from "./queue";
 
-@Injectable()
 export class QueueConsumerService implements OnModuleInit {
   constructor(
     @Inject("QueueConsumer") private readonly queueConsumer: QueueConsumer

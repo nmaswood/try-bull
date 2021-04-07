@@ -27,7 +27,6 @@ export class AppController {
     const job = await this.queueProducer.upsertRepeatableJob(
       "echo",
       "nasr-repeat",
-
       {
         message: "hello world",
       },

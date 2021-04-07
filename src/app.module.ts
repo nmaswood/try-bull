@@ -7,6 +7,7 @@ import { QueueConsumerService } from "./queue-consumer";
 
 import { BullQueueConsumer } from "./bull-queue-consumer";
 import { BullQueueProducer } from "./bull-queue-producer";
+import { BullBoardModule } from "./bull-board-module";
 
 import IORedis from "ioredis";
 
@@ -38,8 +39,7 @@ import IORedis from "ioredis";
 
     AppService,
     QueueConsumerService,
-    //BullQueueManagerService,
-    //BullConsumer,
+    BullBoardModule,
   ],
 })
 export class AppModule {}
