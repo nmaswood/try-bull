@@ -15,25 +15,18 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get("queue/remove")
-  async remove(): Promise<any> {
-    const job = await this.queueProducer.removeRepeatableJobsWithId(
-      "echo",
-      "hello-world-1234"
-    );
+  @Get("queue/remove/:id")
+  async remove(@Param("id") id: string): Promise<any> {
+    const job = await this.queueProducer.removeRepeatableJobsWithId("echo", id);
 
-    return { job };
+    return { job, id };
   }
 
-  @Get("queue/:message")
-  async enqueue(@Param("message") message: string): Promise<any> {
-    const job = await this.queueProducer.enqueueJob("echo", {
-      message: "hello world",
-    });
-
-    const bar = await this.queueProducer.upsertRepeatableJob(
+  @Get("queue/repeat/:message")
+  async repeat(@Param("message") message: string): Promise<any> {
+    const job = await this.queueProducer.upsertRepeatableJob(
       "echo",
-      "nasr",
+      "nasr-repeat",
 
       {
         message: "hello world",
@@ -46,12 +39,20 @@ export class AppController {
         },
       }
     );
-    console.log(`Enqueue job with id: ${job.id}`);
-
     return {
       message,
       id: job.id,
-      repeat: bar.id,
+    };
+  }
+
+  @Get("queue/once/:message")
+  async once(@Param("message") message: string): Promise<any> {
+    const job = await this.queueProducer.enqueueJob("echo", {
+      message: "hello world",
+    });
+    return {
+      message,
+      id: job.id,
     };
   }
 }

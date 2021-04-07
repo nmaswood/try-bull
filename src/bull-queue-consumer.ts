@@ -54,7 +54,11 @@ export class BullQueueConsumer implements LBQueue.QueueConsumer {
     });
 
     worker.on("completed", (job: BullMQ.Job, returnvalue: any) => {
-      console.log(`Worker completed processing ${job.id}`);
+      console.log(
+        `Worker completed processing ${
+          job.id
+        } with returnvalue: ${JSON.stringify(returnvalue)}`
+      );
     });
 
     return {
