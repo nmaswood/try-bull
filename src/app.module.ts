@@ -30,13 +30,6 @@ import IORedis from "ioredis";
       useClass: BullQueueProducer,
     },
 
-    {
-      useFactory: (optProvider) => {
-        return new IORedis();
-      },
-      provide: "IORedis.Redis",
-    },
-
     AppService,
     QueueConsumerService,
     BullBoardModule,

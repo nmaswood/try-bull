@@ -28,7 +28,7 @@ export class AppController {
       "echo",
       "nasr-repeat",
       {
-        message: "hello world",
+        message,
       },
 
       {
@@ -47,7 +47,7 @@ export class AppController {
   @Get("queue/once/:message")
   async once(@Param("message") message: string): Promise<any> {
     const job = await this.queueProducer.enqueueJob("echo", {
-      message: "hello world",
+      message,
     });
     return {
       message,

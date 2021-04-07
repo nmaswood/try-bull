@@ -48,8 +48,13 @@ export class BullQueueProducer implements LBQueue.QueueProducer {
     if (jobs.length === MAX_REPEATABLE_JOBS) {
       throw new Error("maximum number of repeatable jobs reached");
     }
+    /*
+     * jobID every 10 seconds print("hello")
+     * jobID every 20 seconds print("hi")
+     *
+     * ---> 2 jobs
+     */
     const jobsWithSameId = jobs.filter((job) => job.id === jobId);
-
     if (jobsWithSameId.length > 1) {
       throw Error(
         `Queue ${queueName} has ${jobsWithSameId.length} jobs with the same id ${jobId}`
