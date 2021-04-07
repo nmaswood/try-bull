@@ -1,5 +1,5 @@
 import * as BullMQ from "bullmq";
-import * as LBQueue from "./i-queue";
+import * as LBQueue from "./queue";
 
 import IORedis from "ioredis";
 

@@ -1,16 +1,16 @@
 import { Injectable } from "@nestjs/common";
-import { BullQueueManager } from "./queue";
+import { BullQueueProducer } from "./bull-queue-producer";
 
 import IORedis from "ioredis";
 
 @Injectable()
-export class BullQueueManagerService {
-  #manager: BullQueueManager;
+export class BullQueueProducerService {
+  #manager: BullQueueProducer;
   constructor() {
-    this.#manager = new BullQueueManager(new IORedis());
+    this.#manager = new BullQueueProducer(new IORedis());
   }
 
-  getManager(): BullQueueManager {
+  getProducer(): BullQueueProducer {
     return this.#manager;
   }
 }

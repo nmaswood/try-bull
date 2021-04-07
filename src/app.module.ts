@@ -1,12 +1,45 @@
 import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { BullConsumer } from "./bull-consumer";
-import { BullQueueManagerService } from "./bull-queue-manager.service";
+
+import { RedisModule } from "@nestjs-modules/ioredis";
+import { QueueConsumerService } from "./queue-consumer";
+
+import { BullQueueConsumer } from "./bull-queue-consumer";
+import { BullQueueProducer } from "./bull-queue-producer";
+
+import IORedis from "ioredis";
 
 @Module({
-  imports: [],
+  imports: [
+    RedisModule.forRoot({
+      config: {
+        url: "redis://localhost:6379",
+      },
+    }),
+  ],
   controllers: [AppController],
-  providers: [AppService, BullQueueManagerService, BullConsumer],
+  providers: [
+    {
+      provide: "QueueConsumer",
+      useClass: BullQueueConsumer,
+    },
+    {
+      provide: "QueueProducer",
+      useClass: BullQueueProducer,
+    },
+
+    {
+      useFactory: (optProvider) => {
+        return new IORedis();
+      },
+      provide: "IORedis.Redis",
+    },
+
+    AppService,
+    QueueConsumerService,
+    //BullQueueManagerService,
+    //BullConsumer,
+  ],
 })
 export class AppModule {}
