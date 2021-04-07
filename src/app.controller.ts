@@ -16,10 +16,12 @@ export class AppController {
   }
 
   @Get("queue/remove")
-  async remove(@Param("message") message: string): Promise<any> {
-    const job = await this.queueProducer.enqueueJob("echo", {
-      message: "hello world",
-    });
+  async remove(): Promise<any> {
+    const job = await this.queueProducer.removeRepeatableJobsWithId(
+      "echo",
+      "hello-world-1234"
+    );
+
     return { job };
   }
 

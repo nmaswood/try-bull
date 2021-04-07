@@ -9,11 +9,10 @@ export interface QueueProducer {
     args: JobMap[JobNameT]["args"],
     opts: EnqueueRepeatableOpts
   ) => Promise<Job>;
-  removeRepeatableJob: <JobNameT extends JobName>(
+  removeRepeatableJobsWithId: <JobNameT extends JobName>(
     queueName: JobNameT,
-    jobId: string,
-    opts: RepeatOptions
-  ) => Promise<RemoveJob>;
+    jobId: string
+  ) => Promise<RemoveJobs>;
 }
 
 export interface QueueConsumer {
@@ -36,8 +35,8 @@ export interface JobInput<PayloadT> {
   args: PayloadT;
 }
 
-export interface RemoveJob {
-  wasRemoved: boolean;
+export interface RemoveJobs {
+  numberRemoved: number;
 }
 
 export type RepeatOptions =

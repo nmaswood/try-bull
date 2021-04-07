@@ -8,6 +8,8 @@ const DEFAULT_BULL_ARGS = {
   removeOnFail: true,
 } as const;
 
+const MAX_REPEATABLE_JOBS = 100;
+
 export class BullQueueProducer implements LBQueue.QueueProducer {
   #queues: Record<LBQueue.JobName, BullQueueForName<LBQueue.JobName>>;
 
@@ -42,6 +44,18 @@ export class BullQueueProducer implements LBQueue.QueueProducer {
     opts: LBQueue.EnqueueRepeatableOpts
   ): Promise<LBQueue.Job> => {
     const queue = this.getQueue(queueName);
+    const jobs = await queue.getRepeatableJobs(0, MAX_REPEATABLE_JOBS);
+    if (jobs.length === MAX_REPEATABLE_JOBS) {
+      throw new Error("maximum number of repeatable jobs reached");
+    }
+    const jobsWithSameId = jobs.filter((job) => job.id === jobId);
+
+    if (jobsWithSameId.length > 1) {
+      throw Error(
+        `Queue ${queueName} has ${jobsWithSameId.length} jobs with the same id ${jobId}`
+      );
+    }
+
     const job = await queue.add(queueName, args, {
       ...DEFAULT_BULL_ARGS,
       jobId,
@@ -50,20 +64,23 @@ export class BullQueueProducer implements LBQueue.QueueProducer {
     return { id: job.id };
   };
 
-  removeRepeatableJob = async <JobNameT extends LBQueue.JobName>(
+  removeRepeatableJobsWithId = async <JobNameT extends LBQueue.JobName>(
     queueName: JobNameT,
-    jobId: string,
-    opts: LBQueue.RepeatOptions
-  ): Promise<LBQueue.RemoveJob> => {
+    jobId: string
+  ): Promise<LBQueue.RemoveJobs> => {
     const queue = this.getQueue(queueName);
-    const job = await queue.removeRepeatable(
-      queueName,
-      this.toBullRepeatOpts(opts),
-      jobId
-    );
-    console.log(job);
+    const jobs = await queue.getRepeatableJobs(0, MAX_REPEATABLE_JOBS);
+
+    const jobKeys = jobs
+      .filter((job) => job.id === jobId)
+      .map((job) => job.key);
+
+    for (const key of jobKeys) {
+      await queue.removeRepeatableByKey(key);
+    }
+
     return {
-      wasRemoved: false,
+      numberRemoved: jobKeys.length,
     };
   };
 
